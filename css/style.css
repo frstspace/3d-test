@@ -161,10 +161,10 @@ html, body {
     transition: color 0.15s, opacity 0.15s;
 }
 
-.joystick-arrow-up { left: 50%; top: 10%; }
-.joystick-arrow-down { left: 50%; top: 82%; }
-.joystick-arrow-left { left: 8%; top: 46%; }
-.joystick-arrow-right { left: 84%; top: 46%; }
+.joystick-arrow-up { left: 50%; top: 12%; }
+.joystick-arrow-down { left: 50%; top: 80%; }
+.joystick-arrow-left { left: 10%; top: 46%; }
+.joystick-arrow-right { left: 82%; top: 46%; }
 
 /* ========== Thumb для левого джойстика (кружок) ========== */
 .joystick-thumb-move {

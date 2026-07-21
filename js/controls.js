@@ -121,8 +121,12 @@ class GameControls {
         joystick.dy = 0;
 
         const base = type === 'move' ? this.moveBase : this.lookBase;
-        base.style.left = (touch.clientX - 60) + 'px';
-        base.style.top = (touch.clientY - 60) + 'px';
+        // Зажимаем джойстик в пределах экрана, чтобы стрелки не обрезались
+        const half = 60;
+        const clampedX = Math.max(0, Math.min(window.innerWidth - 120, touch.clientX - half));
+        const clampedY = Math.max(0, Math.min(window.innerHeight - 120, touch.clientY - half));
+        base.style.left = clampedX + 'px';
+        base.style.top = clampedY + 'px';
         base.classList.add('active');
         const thumbEl = base.querySelector(`.joystick-thumb-${type}`);
         if (thumbEl) thumbEl.style.transform = 'translate(-50%, -50%)';
