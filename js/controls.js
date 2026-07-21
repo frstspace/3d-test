@@ -84,9 +84,26 @@ class GameControls {
 
     _createJoystickBase(type) {
         const base = document.createElement('div');
-        base.className = 'joystick-base';
+        base.className = `joystick-base joystick-${type}`;
+
+        if (type === 'move') {
+            // Стрелки направления для левого джойстика
+            const arrows = [
+                { dir: 'up', text: '▲', x: '50%', y: '8%' },
+                { dir: 'down', text: '▼', x: '50%', y: '84%' },
+                { dir: 'left', text: '◄', x: '8%', y: '46%' },
+                { dir: 'right', text: '►', x: '84%', y: '46%' },
+            ];
+            arrows.forEach(a => {
+                const el = document.createElement('div');
+                el.className = `joystick-arrow joystick-arrow-${a.dir}`;
+                el.textContent = a.text;
+                base.appendChild(el);
+            });
+        }
+
         const thumb = document.createElement('div');
-        thumb.className = 'joystick-thumb';
+        thumb.className = `joystick-thumb joystick-thumb-${type}`;
         base.appendChild(thumb);
         return base;
     }
@@ -107,7 +124,8 @@ class GameControls {
         base.style.left = (touch.clientX - 60) + 'px';
         base.style.top = (touch.clientY - 60) + 'px';
         base.classList.add('active');
-        base.querySelector('.joystick-thumb').style.transform = 'translate(-50%, -50%)';
+        const thumbEl = base.querySelector(`.joystick-thumb-${type}`);
+        if (thumbEl) thumbEl.style.transform = 'translate(-50%, -50%)';
 
         if (type === 'look') {
             this.lookJoystick.lastX = touch.clientX;
@@ -153,8 +171,10 @@ class GameControls {
 
         // Визуал
         const base = type === 'move' ? this.moveBase : this.lookBase;
-        const thumb = base.querySelector('.joystick-thumb');
-        thumb.style.transform = `translate(calc(-50% + ${clampedDx}px), calc(-50% + ${clampedDy}px))`;
+        const thumb = base.querySelector(`.joystick-thumb-${type}`);
+        if (thumb) {
+            thumb.style.transform = `translate(calc(-50% + ${clampedDx}px), calc(-50% + ${clampedDy}px))`;
+        }
     }
 
     _onTouchEnd(e, type) {
