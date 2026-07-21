@@ -13,7 +13,7 @@ class GameControls {
         // Джойстик движения
         this.moveJoystick = { active: false, touchId: -1, baseX: 0, baseY: 0, dx: 0, dy: 0 };
         // Джойстик прицела
-        this.lookJoystick = { active: false, touchId: -1, baseX: 0, baseY: 0, dx: 0, dy: 0, lastX: 0, lastY: 0 };
+        this.lookJoystick = { active: false, touchId: -1, baseX: 0, baseY: 0, dx: 0, dy: 0, lastX: 0, lastY: 0, tap: false, startX: 0, startY: 0 };
 
         // Клавиатура
         this.keys = { w: false, a: false, s: false, d: false, shift: false };
@@ -137,6 +137,9 @@ class GameControls {
         if (type === 'look') {
             this.lookJoystick.lastX = touch.clientX;
             this.lookJoystick.lastY = touch.clientY;
+            this.lookJoystick.startX = touch.clientX;
+            this.lookJoystick.startY = touch.clientY;
+            this.lookJoystick.tap = true;
         }
 
         // Сброс позиции thumb в центр
@@ -178,6 +181,12 @@ class GameControls {
             this.lookY = (touch.clientY - this.lookJoystick.lastY) * 0.01;
             this.lookJoystick.lastX = touch.clientX;
             this.lookJoystick.lastY = touch.clientY;
+            // Если палец сместился >8px — это не тап, а прицеливание
+            const totalDx = touch.clientX - this.lookJoystick.startX;
+            const totalDy = touch.clientY - this.lookJoystick.startY;
+            if (Math.sqrt(totalDx*totalDx + totalDy*totalDy) > 8) {
+                this.lookJoystick.tap = false;
+            }
         }
 
         // Визуал
@@ -219,9 +228,14 @@ class GameControls {
             this.moveX = 0;
             this.moveZ = 0;
         } else {
+            // Если был тап (палец не двигался) — стреляем
+            if (this.lookJoystick.tap) {
+                this.shooting = true;
+                // Сразу сбрасываем, чтобы выстрел был однократным
+                setTimeout(() => { this.shooting = false; }, 50);
+            }
             this.lookX = 0;
             this.lookY = 0;
-            this.shooting = false;
         }
     }
 

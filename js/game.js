@@ -820,28 +820,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Кнопка стрельбы
-    const fireBtn = document.getElementById('fire-btn');
-    fireBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        if (game && game.gameRunning) game.controls.shooting = true;
-    }, { passive: false });
-    fireBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        if (game && game.gameRunning) game.controls.shooting = false;
-    }, { passive: false });
-    fireBtn.addEventListener('mousedown', () => {
-        if (game && game.gameRunning) game.controls.shooting = true;
-    });
-    fireBtn.addEventListener('mouseup', () => {
-        if (game && game.gameRunning) game.controls.shooting = false;
-    });
-
     // Блокировка скролла на мобильных
     document.addEventListener('touchmove', (e) => {
         if (e.target.closest('#game-container') ||
-            e.target.closest('.joystick-zone') ||
-            e.target.closest('#fire-btn')) {
+            e.target.closest('.joystick-zone')) {
             e.preventDefault();
         }
     }, { passive: false });
