@@ -127,12 +127,13 @@ html, body {
     height: 100%;
 }
 
-/* Показываем джойстики и кнопку стрельбы только на touch-устройствах */
+/* На ПК показываем джойстики полупрозрачными для тестирования */
 @media (hover: hover) and (pointer: fine) {
-    #joystick-left-zone,
-    #joystick-right-zone,
-    #fire-btn {
-        display: none !important;
+    .joystick-base {
+        opacity: 0.3;
+    }
+    .joystick-arrow {
+        font-size: 10px;
     }
 }
 
