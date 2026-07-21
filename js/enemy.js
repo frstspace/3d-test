@@ -25,18 +25,11 @@ class Enemy {
         this.body.position.y = 0.5;
         this.group.add(this.body);
 
-        // Голова (сфера)
-        const headGeo = new THREE.SphereGeometry(0.35, 8, 8);
-        const headMat = new THREE.MeshPhongMaterial({
-            color: 0xff6666,
-            emissive: 0xff3333,
-            emissiveIntensity: 0.15
-        });
-        this.head = new THREE.Mesh(headGeo, headMat);
-        this.head.position.y = 1.3;
-        this.group.add(this.head);
+        // Голова — картинка (спрайт), если загружена, иначе сфера
+        this.head = null;
+        this._loadHeadTexture();
 
-        // Глаза (две маленькие сферы)
+        // Глаза (две маленькие сферы) — поверх картинки для эффекта
         const eyeMat = new THREE.MeshPhongMaterial({ color: 0xffff00, emissive: 0xffff00, emissiveIntensity: 0.5 });
         const eyeGeo = new THREE.SphereGeometry(0.08, 6, 6);
         const eye1 = new THREE.Mesh(eyeGeo, eyeMat);
@@ -63,6 +56,55 @@ class Enemy {
         this.group.add(this.healthBarGroup);
 
         scene.add(this.group);
+    }
+
+    _loadHeadTexture() {
+        // Пробуем загрузить картинку head.png
+        const loader = new THREE.TextureLoader();
+        const imgUrl = 'img/head.png';
+
+        loader.load(imgUrl, (texture) => {
+            texture.needsUpdate = true;
+
+            const spriteMat = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                depthTest: true,
+                depthWrite: false
+            });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.scale.set(0.7, 0.7, 1);
+            sprite.position.y = 1.3;
+
+            // Удаляем старую голову (сферу-заглушку)
+            if (this.head) {
+                this.group.remove(this.head);
+                if (this.head.geometry) this.head.geometry.dispose();
+                if (this.head.material) this.head.material.dispose();
+            }
+
+            this.head = sprite;
+            this.group.add(sprite);
+        }, undefined, () => {
+            // Ошибка загрузки — остаётся сфера-заглушка
+        });
+
+        // Сразу создаём сферу-заглушку, пока картинка грузится
+        this._createFallbackHead();
+    }
+
+    _createFallbackHead() {
+        if (this.head && this.head.type !== 'Sprite') return;
+        const geo = new THREE.SphereGeometry(0.35, 8, 8);
+        const mat = new THREE.MeshPhongMaterial({
+            color: 0xff6666,
+            emissive: 0xff3333,
+            emissiveIntensity: 0.15
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 1.3;
+        this.head = mesh;
+        this.group.add(mesh);
     }
 
     takeDamage(damage) {
@@ -101,7 +143,13 @@ class Enemy {
         // Эффект смерти
         this.body.material.emissive.setHex(0xff0000);
         this.body.material.emissiveIntensity = 1.0;
-        this.head.material.emissive.setHex(0xff0000);
+
+        // Если голова — сфера (3D), меняем цвет. Спрайт просто гаснет
+        if (this.head.type === 'Mesh') {
+            this.head.material.emissive.setHex(0xff0000);
+        } else if (this.head.type === 'Sprite') {
+            this.head.material.opacity = 0.3;
+        }
 
         // Анимация исчезновения
         const startScale = 1;
@@ -131,8 +179,10 @@ class Enemy {
         // Освобождение ресурсов
         this.body.geometry.dispose();
         this.body.material.dispose();
-        this.head.geometry.dispose();
-        this.head.material.dispose();
+        if (this.head) {
+            if (this.head.geometry) this.head.geometry.dispose();
+            if (this.head.material) this.head.material.dispose();
+        }
     }
 
     update(playerPosition, deltaTime) {
