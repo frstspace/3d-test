@@ -137,19 +137,28 @@ html, body {
     }
 }
 
-.joystick-base {
+.joystick-move {
     position: fixed;
+    left: 20px;
+    bottom: 100px;
     width: 120px;
     height: 120px;
+}
+
+.joystick-look {
+    position: fixed;
+    right: 20px;
+    bottom: 120px;
+    width: 120px;
+    height: 120px;
+}
+
+.joystick-base {
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.08);
     border: 2px solid rgba(255, 255, 255, 0.15);
     pointer-events: none;
-    display: none;
-}
-
-.joystick-base.active {
-    display: block;
+    z-index: 20;
 }
 
 /* ========== Стрелки на левом джойстике ========== */
@@ -389,6 +398,18 @@ button {
     }
     #crosshair {
         font-size: 24px;
+    }
+    .joystick-move {
+        left: 10px;
+        bottom: 80px;
+        width: 100px;
+        height: 100px;
+    }
+    .joystick-look {
+        right: 10px;
+        bottom: 100px;
+        width: 100px;
+        height: 100px;
     }
     #start-screen h1 {
         font-size: 36px;

@@ -66,8 +66,18 @@ class GameControls {
         // Создаём визуальные элементы джойстиков
         this.moveBase = this._createJoystickBase('move');
         this.lookBase = this._createJoystickBase('look');
-        leftZone.appendChild(this.moveBase);
-        rightZone.appendChild(this.lookBase);
+        // Добавляем в body, чтобы position:fixed работал от окна
+        document.body.appendChild(this.moveBase);
+        document.body.appendChild(this.lookBase);
+        // Сразу показываем (стрелки видны всегда)
+        this.moveBase.classList.add('active');
+        this.lookBase.classList.add('active');
+
+        // Позиции по умолчанию (из CSS)
+        this.moveDefaultX = 20;
+        this.moveDefaultY = null; // будет вычислено
+        this.lookDefaultX = null;
+        this.lookDefaultY = null;
 
         // Обработчики касаний для левой зоны (движение)
         leftZone.addEventListener('touchstart', (e) => this._onTouchStart(e, 'move'), { passive: true });
@@ -75,11 +85,12 @@ class GameControls {
         leftZone.addEventListener('touchend', (e) => this._onTouchEnd(e, 'move'), { passive: true });
         leftZone.addEventListener('touchcancel', (e) => this._onTouchEnd(e, 'move'), { passive: true });
 
-        // Обработчики касаний для правой зоны (прицел + стрельба)
+        // Обработчики касаний для правой зоны (прицел)
         rightZone.addEventListener('touchstart', (e) => this._onTouchStart(e, 'look'), { passive: true });
         rightZone.addEventListener('touchmove', (e) => this._onTouchMove(e, 'look'), { passive: true });
         rightZone.addEventListener('touchend', (e) => this._onTouchEnd(e, 'look'), { passive: true });
         rightZone.addEventListener('touchcancel', (e) => this._onTouchEnd(e, 'look'), { passive: true });
+    }
     }
 
     _createJoystickBase(type) {
@@ -114,6 +125,7 @@ class GameControls {
 
         if (joystick.active) return;
         joystick.active = true;
+        joystick.tickId = Date.now();
         joystick.touchId = touch.identifier;
         joystick.baseX = touch.clientX;
         joystick.baseY = touch.clientY;
@@ -121,20 +133,16 @@ class GameControls {
         joystick.dy = 0;
 
         const base = type === 'move' ? this.moveBase : this.lookBase;
-        // Зажимаем джойстик в пределах экрана, чтобы стрелки не обрезались
-        const half = 60;
-        const clampedX = Math.max(0, Math.min(window.innerWidth - 120, touch.clientX - half));
-        const clampedY = Math.max(0, Math.min(window.innerHeight - 120, touch.clientY - half));
-        base.style.left = clampedX + 'px';
-        base.style.top = clampedY + 'px';
-        base.classList.add('active');
-        const thumbEl = base.querySelector(`.joystick-thumb-${type}`);
-        if (thumbEl) thumbEl.style.transform = 'translate(-50%, -50%)';
+        base.style.transition = 'none';
 
         if (type === 'look') {
             this.lookJoystick.lastX = touch.clientX;
             this.lookJoystick.lastY = touch.clientY;
         }
+
+        // Сброс позиции thumb в центр
+        const thumbEl = base.querySelector(`.joystick-thumb-${type}`);
+        if (thumbEl) thumbEl.style.transform = 'translate(-50%, -50%)';
     }
 
     _onTouchMove(e, type) {
@@ -200,7 +208,13 @@ class GameControls {
         joystick.dy = 0;
 
         const base = type === 'move' ? this.moveBase : this.lookBase;
-        base.classList.remove('active');
+        // Плавно возвращаем thumb в центр
+        const thumbEl = base.querySelector(`.joystick-thumb-${type}`);
+        if (thumbEl) {
+            thumbEl.style.transition = 'transform 0.15s ease';
+            thumbEl.style.transform = 'translate(-50%, -50%)';
+            setTimeout(() => { thumbEl.style.transition = 'none'; }, 200);
+        }
 
         if (type === 'move') {
             this.moveX = 0;
