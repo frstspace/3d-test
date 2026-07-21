@@ -91,7 +91,6 @@ class GameControls {
         rightZone.addEventListener('touchend', (e) => this._onTouchEnd(e, 'look'), { passive: true });
         rightZone.addEventListener('touchcancel', (e) => this._onTouchEnd(e, 'look'), { passive: true });
     }
-    }
 
     _createJoystickBase(type) {
         const base = document.createElement('div');
